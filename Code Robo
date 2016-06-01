@@ -1,0 +1,107 @@
+#include <AFMotor.h>
+
+AF_DCMotor motorE(3); 
+AF_DCMotor motorD(4);  
+
+int pinosensorE = 15;      
+int pinosensorD = 14; 
+int pinoCantosensorE = 13;      
+int pinoCantosensorD = 12; 
+
+int rangepreto[2] = {900,1000};
+int rangeverde1[2] = {840,870};
+int rangeverde2[2] = {870,900};
+
+int velocidade = 250;
+  
+//Método setup, executado uma vez ao ligar o Arduino.
+void setup() {
+        
+}
+
+void loop(){
+  checkgiro();
+  segway(); 
+   
+}
+
+void segway(){
+ 
+    int  sensorE = analogRead(pinosensorE);
+    int  sensorD = analogRead(pinosensorD);
+    
+    if(validarange(sensorE,rangepreto) && validarange(sensorD,rangepreto) ){ // Dois sensores na linha preta
+         motorE.setSpeed(velocidade);
+         motorE.run(FORWARD); 
+         motorD.setSpeed(velocidade);
+         motorD.run(FORWARD); 
+
+      } 
+       else if(validarange(sensorE,rangepreto) && !validarange(sensorD,rangepreto) ){ // Apenas sensor esquerdo na linha preta, move motores direito
+         motorE.setSpeed(velocidade);
+         motorE.run(BACKWARD);
+         motorD.setSpeed(velocidade);
+         motorD.run(FORWARD); 
+      } 
+       else if(!validarange(sensorE,rangepreto) && validarange(sensorD,rangepreto) ){ // Apenas sensor direito na linha preta, move motores esquerdo
+         motorE.setSpeed(velocidade);
+         motorE.run(FORWARD);
+         motorD.setSpeed(velocidade);
+         motorD.run(BACKWARD);
+      } 
+      if(!validarange(sensorE,rangepreto) && !validarange(sensorD,rangepreto)) { // Nenhum sensor na linha preta
+        
+        motorE.setSpeed(0);
+        motorE.run(FORWARD); 
+        motorD.setSpeed(0);
+        motorD.run(FORWARD);
+        
+      } 
+}
+
+
+void checkgiro(){
+    int  sensorE = analogRead(pinosensorE);
+    int  sensorD = analogRead(pinosensorD);
+    int  sensorCantoE = analogRead(pinoCantosensorE);
+    int  sensorCantoD = analogRead(pinoCantosensorD);
+    int viraesquerda  = validarange(sensorCantoE, rangeverde1);
+    int viradireita = validarange(sensorCantoD, rangeverde2);
+    int velocidadegiro = 250;
+    
+   
+     if( viradireita){
+      
+      while(!validarange(sensorD, rangepreto)){
+        motorE.setSpeed(velocidadegiro);
+        motorE.run(FORWARD); 
+        motorD.setSpeed(velocidadegiro);
+        motorD.run(BACKWARD);        
+        
+        }
+      }
+       if ( viraesquerda){
+        
+        while(!validarange(sensorE, rangepreto)){
+        
+        motorE.setSpeed(velocidadegiro);
+        motorE.run(BACKWARD); 
+        motorD.setSpeed(velocidadegiro);
+        motorD.run(FORWARD);
+        }
+        
+      }
+      
+    }
+
+  
+
+
+
+int validarange(int valor, int range[]){
+  
+  if(valor >= range[0] && valor <= range[1]){
+      return 1;
+    }
+    return 0;
+}
